@@ -4,27 +4,47 @@ import requests
 import sys
 
 DATABASE_URLS = {
-    0: 'https://library-one-default-rtdb.firebaseio.com/.json',
-    1: 'https://library-two-9a851-default-rtdb.firebaseio.com/.json'
+    0: 'https://fir-book0-default-rtdb.firebaseio.com/',
+    1: 'https://fir-book1-3d551-default-rtdb.firebaseio.com/'
 }
 
-
+#--------------Hash the Author and Book-----------------------------------------
 class BookLibrary:
     def __init__(self, capacity=7):
-
+        '''
+        Construct connection with the firebase and initialize hashtable
+        '''
         self.capacity = capacity #set initial index size = 7
         self.firebase_odd = DATABASE_URLS[0]
         self.firebase_even = DATABASE_URLS[1]
 
     def polynomial_hash(self, author):
-        
+        '''
+        Using polynomial hasing for the author name
+
+        Input: (str) author
+
+        Returns: (int) the hash value of the author
+        '''
         hash_value = 0
         for char in author:
-            hash_value = (hash_value * 37 + ord(char)) % self.capacity #polynomial hashing
+            hash_value = (hash_value * 37 + ord(char)) % self.capacity 
         return hash_value
 
     def insert(self, book_id, author, title, year, price):
+        '''
+        Insert book information to the hashtable
 
+        Input: 
+            book_id: (int) book id
+            author: (str) book author
+            title: (str) book title
+            year: (int) book year
+            price: (float) book price
+        
+        Return: None or raise error if there is request 
+            timeout or connection error
+        '''
         hash_value = self.polynomial_hash(author)
         book = {book_id: {"author": author, "title": title, "year": year, "price": price}}
 
@@ -47,28 +67,31 @@ class BookLibrary:
 library = BookLibrary()
 #----------------------------------------------------------
 
-def add_book(book_id, book_json):
 
-    # INPUT : book id and book json from command line
-    # RETURN : status code after pyhton REST call to add book [response.status_code]
-    # EXPECTED RETURN : 200
+def add_book(book_id, book_json):
+    '''
+    INPUT : book id and book json from command line
+    RETURN : status code after pyhton REST call to add book [response.status_code]
+    EXPECTED RETURN : 200
+    '''
 
     data = json.loads(book_json)
-
     author = data["author"]
     price = data["price"]
     title = data["title"]
     year = data["year"]
-
     status_code = library.insert(book_id, author, title, year, price)
 
     return status_code
 
+
 def search_by_author(author_name):
-    # INPUT: Name of the author
-    # RETURN: JSON object having book_ids as keys and book information as value [book_json] published by that author  
-    # EXPECTED RETURN TYPE: {'102': {'author': ... , 'price': ..., 'title': ..., 'year': ...}, '104': {'author': , 'price': , 'title': , 'year': }}
-    
+    '''
+    INPUT: Name of the author
+    RETURN: JSON object having book_ids as keys and book information as value [book_json] published by that author  
+    EXPECTED RETURN TYPE: {'102': {'author': ... , 'price': ..., 'title': ..., 'year': ...}, '104': {'author': , 'price': , 'title': , 'year': }}
+    '''
+
     hash_value = library.polynomial_hash(author_name)
     
     if hash_value % 2 == 0:
@@ -87,11 +110,13 @@ def search_by_author(author_name):
 
 
 def search_by_year(year):
-
-    # INPUT: Year when the book published
-    # RETURN: JSON object having book_ids as key and book information as value [book_json] published in that year
-    # EXPECTED RETURN TYPE: {'102': {'author': ... , 'price': ..., 'title': ..., 'year': ...}, '104': {'author': , 'price': , 'title': , 'year': }}
-
+    '''
+    INPUT: Year when the book published
+    RETURN: JSON object having book_ids as key and book information as value 
+        [book_json] published in that year
+    EXPECTED RETURN TYPE: {'102': {'author': ... , 'price': ..., 'title': ..., 
+        'year': ...}, '104': {'author': , 'price': , 'title': , 'year': }}
+    '''
     combined_data = {}  
 
     for url in DATABASE_URLS.values():
@@ -109,7 +134,6 @@ def search_by_year(year):
             print(f"Error fetching data from {url}")
 
     return json.dumps(combined_data)
-
 
 
 # Use the below main method to test your code
