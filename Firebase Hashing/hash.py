@@ -4,8 +4,8 @@ import requests
 import sys
 
 DATABASE_URLS = {
-    0: 'https://fir-book0-default-rtdb.firebaseio.com/',
-    1: 'https://fir-book1-3d551-default-rtdb.firebaseio.com/'
+    0: 'firebase 1 url',
+    1: 'firebase 2 url'
 }
 
 #--------------Hash the Author and Book-----------------------------------------
